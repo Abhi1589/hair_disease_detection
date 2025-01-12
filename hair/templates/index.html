@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hair Disease Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #6366f1;
+            --secondary-pink: #fca5a5;
+            --bg-purple: rgba(99, 102, 241, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --gradient-start: rgba(99, 102, 241, 0.2);
+            --gradient-end: rgba(252, 165, 165, 0.2);
+        }
+
+        body {
+            background-image: url('/static/bg_image.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #4a5568;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .model-card {
+            transition: all 0.3s ease;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-blue), #818cf8);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #818cf8, var(--primary-blue));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #8b5cf6, #6366f1);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        #preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
+        }
+
+        .accuracy-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+            display: none;
+            z-index: 1000;
+        }
+
+        .selected-model {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 2px solid var(--primary-blue);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .details-card {
+            display: none;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .doctor-info {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .remedy-info {
+            background: linear-gradient(135deg, rgba(252, 165, 165, 0.05), rgba(99, 102, 241, 0.05));
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid rgba(252, 165, 165, 0.1);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #6b46c1;
+            border-radius: 10px;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(252, 165, 165, 0.1), rgba(220, 38, 38, 0.1));
+            border: 1px solid rgba(252, 165, 165, 0.2);
+            color: #dc2626;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            color: var(--primary-blue);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center" style="color: white;">Hair Disease Detection</h1>
+        
+        <div class="row mb-5">
+            {% for model_name, accuracy in accuracies.items() %}
+            <div class="col-md-4 mb-4">
+                <div class="model-card" id="{{ model_name }}-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ model_name|title }} Model</h5>
+                        <p class="card-text">
+                            {% if model_name == 'vgg' %}
+                            Modified VGG16 architecture with custom classifier layers
+                            {% elif model_name == 'custom_cnn' %}
+                            Custom Convolutional Neural Network optimized for hair disease detection
+                            {% else %}
+                            MobileNetV2 architecture fine-tuned for hair disease classification
+                            {% endif %}
+                        </p>
+                        <button class="btn btn-primary w-100" onclick="selectModel('{{ model_name }}')">
+                            Use {{ model_name|upper }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4" id="selected-model">Select a model above</h5>
+                        <form id="upload-form" class="mb-3">
+                            <input type="file" class="form-control mb-3" id="image-input" accept="image/*">
+                            <input type="hidden" id="model-type" name="model_type">
+                            <button type="submit" class="btn btn-success w-100" disabled id="predict-btn">Predict</button>
+                        </form>
+                        <div id="preview-container" class="text-center mb-3" style="display: none;">
+                            <img id="preview-image" src="" alt="Preview">
+                        </div>
+                        <div id="result" class="alert" style="display: none;"></div>
+                        
+                        <div id="details-container" class="details-card">
+                            <div class="remedy-info">
+                                <h5 class="mb-3">Home Remedy</h5>
+                                <p id="home-remedy" class="mb-0"></p>
+                            </div>
+                            <div class="doctor-info">
+                                <h5 class="mb-3">Medical Professional Contact</h5>
+                                <p id="doctor-contact" class="mb-2"></p>
+                                <p id="doctor-email" class="mb-0"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accuracy-box" id="accuracy-box">
+        <h6 class="mb-2">Model Performance</h6>
+        <p class="mb-1" id="selected-model-name"></p>
+        <p class="mb-0" id="model-accuracy"></p>
+    </div>
+
+    <script>
+        const accuracies = {{ accuracies|tojson|safe }};
+        let currentModel = null;
+
+        function selectModel(model) {
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected-model');
+            });
+            
+            document.getElementById(`${model}-card`).classList.add('selected-model');
+            
+            currentModel = model;
+            document.getElementById('model-type').value = model;
+            document.getElementById('selected-model').textContent = 
+                `Selected Model: ${model.replace('_', ' ').toUpperCase()}`;
+            document.getElementById('predict-btn').disabled = 
+                !document.getElementById('image-input').files.length;
+            
+            document.getElementById('selected-model-name').textContent = 
+                `Model: ${model.replace('_', ' ').toUpperCase()}`;
+            document.getElementById('model-accuracy').textContent = 
+                `Accuracy: ${(accuracies[model] * 100).toFixed(1)}%`;
+            document.getElementById('accuracy-box').style.display = 'block';
+        }
+
+        document.getElementById('image-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-image').src = e.target.result;
+                    document.getElementById('preview-container').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+                document.getElementById('predict-btn').disabled = !currentModel;
+            }
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('file', document.getElementById('image-input').files[0]);
+            formData.append('model_type', currentModel);
+
+            const predictBtn = document.getElementById('predict-btn');
+            const originalBtnText = predictBtn.innerHTML;
+            predictBtn.disabled = true;
+            predictBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                const detailsContainer = document.getElementById('details-container');
+                
+                if (data.success) {
+                    resultDiv.className = 'alert alert-success';
+                    resultDiv.innerHTML = `
+                        <strong>Prediction:</strong> ${data.prediction}<br>
+                        <small class="text-muted">Processed using ${currentModel.replace('_', ' ').toUpperCase()} model</small>
+                    `;
+                    
+                    document.getElementById('home-remedy').textContent = data.home_remedy;
+                    document.getElementById('doctor-contact').textContent = data.doctor_contact;
+                    document.getElementById('doctor-email').textContent = data.doctor_email;
+                    detailsContainer.style.display = 'block';
+                } else {
+                    resultDiv.className = 'alert alert-danger';
+                    resultDiv.textContent = data.error;
+                    detailsContainer.style.display = 'none';
+                }
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                document.getElementById('result').className = 'alert alert-danger';
+                document.getElementById('result').textContent = 'Error processing request. Please try again.';
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('details-container').style.display = 'none';
+                console.error('Error:', error);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.innerHTML = originalBtnText;
+            }
+        });
+    </script>
+</body>
+</html>
